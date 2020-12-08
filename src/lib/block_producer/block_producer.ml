@@ -386,7 +386,7 @@ let run ~logger ~prover ~verifier ~trust_system ~get_completed_work
                 Transition_registry
             in
             let crumb = Transition_frontier.best_tip frontier in
-            [%log trace]
+            [%log info]
               ~metadata:[("breadcrumb", Breadcrumb.to_yojson crumb)]
               "Producing new block with parent $breadcrumb%!" ;
             let previous_protocol_state, previous_protocol_state_proof =
@@ -491,7 +491,9 @@ let run ~logger ~prover ~verifier ~trust_system ~get_completed_work
                         ; data=
                             External_transition.create ~protocol_state
                               ~protocol_state_proof ~staged_ledger_diff
-                              ~validation_callback:Fn.ignore
+                              ~validation_callback:
+                                (Coda_net2.Validation_callback
+                                 .create_without_expiration ())
                               ~delta_transition_chain_proof () }
                       |> External_transition.skip_time_received_validation
                            `This_transition_was_not_received_via_gossip
@@ -531,7 +533,7 @@ let run ~logger ~prover ~verifier ~trust_system ~get_completed_work
                              | `Prover_error _ ) as err ->
                                err )
                     in
-                    [%str_log trace]
+                    [%str_log info]
                       ~metadata:
                         [("breadcrumb", Breadcrumb.to_yojson breadcrumb)]
                       Block_produced ;
@@ -764,7 +766,9 @@ let run_precomputed ~logger ~verifier ~trust_system ~time_controller
               ; data=
                   External_transition.create ~protocol_state
                     ~protocol_state_proof ~staged_ledger_diff
-                    ~validation_callback:Fn.ignore
+                    ~validation_callback:
+                      (Coda_net2.Validation_callback.create_without_expiration
+                         ())
                     ~delta_transition_chain_proof () }
             |> External_transition.skip_time_received_validation
                  `This_transition_was_not_received_via_gossip
